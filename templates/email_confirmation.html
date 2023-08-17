@@ -1,0 +1,11 @@
+{% autoescape off %}
+
+Beinvenido al login de las consultas ciudadanas.
+
+Hola {{ name }} !
+
+Por favor confirma tu correo electronico haciendo click en el siguiente link.
+
+Link de confirmación: http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+
+{% endautoescape %}

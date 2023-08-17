@@ -1,0 +1,187 @@
+{% load static %}
+
+
+{% load crispy_forms_tags  %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Solicitudes Ciudadanas</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Agrega el enlace al archivo de estilos de Bootstrap -->
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/bootstrap-icons.css">
+    <link rel="stylesheet" href="static/css/styles.css">
+    <link rel="stylesheet" href="static/css/dataTables.min.css">
+
+    <script src="static/js/jquery-v3.6.4.min.js"></script>
+    <script src="static/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/dataTables.min.js"></script>
+
+
+</head>
+<body class="dark d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    
+    <div class="container dark p-4 rounded shadow-sm" style="max-width: 1000px;">
+        <div class="container">
+            <div class="d-flex justify-content-end mt-3">
+                <a href="{% url 'signout' %}" class="btn btn-danger">Cerrar Sesión</a>
+            </div>
+        <h3 class="text-center mb-4">Solicitudes Ciudadanas</h3>
+
+        {% if 'usuario_nuevo' in request.GET %}
+        <div class="alert alert-success mt-3" role="alert">
+            <p class="text-center">
+                ¡Bienvenido seas! Aquí puedes revisar solicitudes ciudadanas enviadas.
+            </p>
+        </div>
+        {% endif %}
+
+        <ul class="nav nav-tabs mt-4">
+            <!-- <li class="nav-item">
+                <a class="nav-link" href="#nueva-solicitud" data-bs-toggle="tab">Nueva Solicitud</a>
+            </li> -->
+            <li class="nav-item">
+                <a class="nav-link active" href="#ver-solicitudes" data-bs-toggle="tab">Ver Mis Solicitudes</a>
+            </li>
+            <!-- <li class="nav-item">
+                <a class="nav-link" href="#datos-personales" data-bs-toggle="tab">Datos Personales</a>
+            </li> -->
+        </ul>
+
+        <div class="tab-content mt-4">
+
+            <div class="tab-pane fade show active" id="ver-solicitudes">
+                <table class="table table-hover" id="tabla_solicitudes">
+                    <thead>
+                      <tr>
+                        <th>ID de Reporte</th>
+                        <th>Nombre Corto del Problema</th>
+                        <th>Status</th>
+                        <th>Descripción</th>
+                        <th>Fecha de Creación</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for solicitud in solicitudes %}
+                      <tr>
+                          <td>{{ solicitud.id_de_reporte }}</td>
+                          <td>{{ solicitud.nombre_corto_problema }}</td>
+                          <td>{{ solicitud.status }}</td>
+                          <td>{{ solicitud.descripcion_problema }}</td>
+                          <td>{{ solicitud.fecha_creacion }}</td>
+                          <td>
+                            <button class="btn btn-primary ver-solicitud" data-solicitud-id="{{ solicitud.id_de_reporte }}" data-bs-toggle="modal" data-bs-target="#modalSolicitud">ver</button>
+                        </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  <div class="container mt-5">
+                    <button class="btn btn-success" id="exportExcel">
+                        <!-- <i class="bi bi-file-excel"></i>--> Exportar a Excel 
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="modalSolicitud" tabindex="-1" aria-labelledby="modalSolicitudLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalSolicitudLabel">Detalles de la Solicitud</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editar-solicitud-form">
+                        {% csrf_token %}
+                        <div id="campos-json"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    $(document).ready(function () {
+        var table = new DataTable('#tabla_solicitudes');
+        
+        $('#exportExcel').on('click', function() {
+            window.location.href = "{% url 'export_excel' %}";
+        });
+
+        $('.ver-solicitud').click(function() {
+            var solicitudId = $(this).data('solicitud-id');
+            var url = `/solicitud/${solicitudId}/`;  // URL del servicio REST
+
+            $.getJSON(url, function(data) {
+            var div_campos = $('#campos-json');
+            div_campos.html("");
+
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                var field = data[key];
+
+                var inpt_group =  '<div class="input-group-sm mb-4">' +
+                                    '   <span class="input-group-text">' + field.long_name + '</span>' +
+                                    '   <div class="form-floating">';
+                if(key == "status"){
+                    inpt_group += '<select class="form-control" id="' + key + '">';
+                        var options = "";
+
+                    for (var i = 0; i < field.status_choices.length; i++) {
+                        var option_value = field.status_choices[i][0];
+                        var label = field.status_choices[i][1];
+                        var selected = (option_value === field.value) ? 'selected="selected"' : '';
+                        options += '<option value="' + option_value + '" ' + selected + '>' + label + '</option>';
+                    }
+                    inpt_group += options + '</select>';
+                }
+                else{
+                    inpt_group += '<input type="text" class="form-control" id="' + key + '" value="' + field.value + '" disabled readonly>';
+                }
+                
+                inpt_group += '</div></div>';
+
+                div_campos.append(inpt_group);
+                }
+            }
+            div_campos.append('<button type="submit" class="btn btn-success" data-bs-dismiss="modal">Guardar</button>');
+            $('#solicitudModal').modal('show');
+            });
+        });
+
+        $('#editar-solicitud-form').on('submit', function(event) {
+            event.preventDefault();  // Evita que el formulario se envíe normalmente
+
+            // Captura los datos del formulario
+            var formData = $(this).serialize();
+            var id = $("#id_de_reporte").val();
+
+            // Envía los datos al servicio REST utilizando AJAX
+            $.ajax({
+                url: '/solicitud/' + id + "/",  // Cambia la URL al servicio REST correspondiente
+                type: 'PATCH',  // Método HTTP para actualizar
+                data: formData,
+                success: function(response) {
+                    // Maneja la respuesta del servicio si es necesario
+                    console.log('Solicitud actualizada exitosamente:', response);
+                },
+                error: function(error) {
+                    // Maneja el error si ocurre algún problema
+                    console.error('Error al actualizar la solicitud:', error);
+                }
+            });
+        });
+
+    });
+</script>

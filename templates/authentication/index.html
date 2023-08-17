@@ -1,0 +1,42 @@
+{% load static %}
+
+<script src="static/js/jquery-v3.6.4.min.js"></script>
+<link rel="stylesheet" href="static/css/bootstrap.min.css">
+<link rel="stylesheet" href="static/css/bootstrap-icons.css">
+<link rel="stylesheet" href="static/css/styles.css">
+<script src="static/js/bootstrap.bundle.min.js"></script>
+
+{% load crispy_forms_tags  %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Authentication</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Agrega el enlace al archivo de estilos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+
+    <div class="container bg-white p-4 rounded shadow-sm" style="max-width: 600px;">
+        <h3 class="text-center mb-4">Bienvenido a las solicitudes ciudadanas</h3>
+
+        {% if user.is_authenticated %}
+        <h3 class="text-center">Hola {{ fname }}</h3>
+        <h4 class="text-center">Tu inicio ha sido exitoso.</h4> 
+        <div class="text-center">
+            <a href="/signout" class="btn btn-primary">SignOut</a>
+        </div>
+        {% else %}
+        <div class="text-center">
+            <a href="/signin" class="btn btn-secondary">Inicia sesión</a> ó 
+            <a href="/signup2" class="btn btn-primary">Registrate!</a>
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

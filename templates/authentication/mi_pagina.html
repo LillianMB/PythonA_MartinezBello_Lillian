@@ -1,0 +1,129 @@
+{% load static %}
+{% load crispy_forms_tags  %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Solicitudes Ciudadanas</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Agrega el enlace al archivo de estilos de Bootstrap -->
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/bootstrap-icons.css">
+    <link rel="stylesheet" href="static/css/styles.css">
+    <link rel="stylesheet" href="static/css/dataTables.min.css">
+
+    <script src="static/js/jquery-v3.6.4.min.js"></script>
+    <script src="static/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/dataTables.min.js"></script>
+
+</head>
+<body class="dark d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    
+    <div class="container dark p-4 rounded shadow-sm" style="max-width: 1000px;">
+        <div class="container">
+            <div class="d-flex justify-content-end mt-3">
+                <a href="{% url 'signout' %}" class="btn btn-danger">Cerrar Sesión</a>
+            </div>
+        <h3 class="text-center mb-4">Solicitudes Ciudadanas</h3>
+
+        {% if 'usuario_nuevo' in request.GET %}
+        <div class="alert alert-success mt-3" role="alert">
+            <p class="text-center">
+                ¡Bienvenido seas! Dios te bendiga. Aquí puedes crear solicitudes ciudadanas.
+            </p>
+        </div>
+        {% endif %}
+
+        {% if 'solicitud_guardada' in request.GET %}
+        <div class="alert alert-success mt-3" role="alert">
+            <p class="text-center">
+                ¡Tu solicitud ha sido Enviada, Enhorabuena!
+            </p>
+        </div>
+        {% endif %}
+
+        {% if 'error_solicitud' in request.GET %}
+        <div class="alert alert-danger mt-3" role="alert">
+            <p class="text-center">
+                ¡Ha ocurrio un error al enviar tu solicitud!
+            </p>
+        </div>
+        {% endif %}
+
+        <ul class="nav nav-tabs mt-4">
+            <li class="nav-item">
+                <a class="nav-link active" href="#nueva-solicitud" data-bs-toggle="tab">Nueva Solicitud</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#ver-solicitudes" data-bs-toggle="tab">Ver Mis Solicitudes</a>
+            </li>
+            <!-- <li class="nav-item">
+                <a class="nav-link" href="#datos-personales" data-bs-toggle="tab">Datos Personales</a>
+            </li> -->
+        </ul>
+
+        <div class="tab-content mt-4">
+            <div class="tab-pane fade show active" id="nueva-solicitud">
+                <form action="solicitud" method="POST">
+                    {% csrf_token %}
+                    {{solicitud_form__|crispy}}
+                    <button type="submit" class="btn btn-success">Enviar!</button>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="ver-solicitudes">
+                <table class="table table-hover" id="tabla_solicitudes">
+                    <thead>
+                      <tr>
+                        <th>ID de Reporte</th>
+                        <th>Nombre Corto del Problema</th>
+                        <th>Status</th>
+                        <th>Descripción</th>
+                        <th>Fecha de Creación</th>
+                        <!-- <th>Acciones</th> -->
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for solicitud in solicitudes %}
+                      <tr>
+                          <td>{{ solicitud.id_de_reporte }}</td>
+                          <td>{{ solicitud.nombre_corto_problema }}</td>
+                          <td>{{ solicitud.status }}</td>
+                          <td>{{ solicitud.descripcion_problema }}</td>
+                          <td>{{ solicitud.fecha_creacion }}</td>
+                          <!-- <td>
+                            <button class="btn btn-primary ver-solicitud" data-solicitud-id="{{ solicitud.id_de_reporte }}">ver</button>
+                        </td> -->
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  <div class="container mt-5">
+                    <button class="btn btn-success" id="exportExcel">
+                        <!-- <i class="bi bi-file-excel"></i>--> Exportar a Excel 
+                    </button>
+                </div>
+            </div>
+            <!-- <div class="tab-pane fade" id="datos-personales">
+                0000000
+            </div> -->
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    $(document).ready(function () {
+        var table = new DataTable('#tabla_solicitudes');
+        
+        $('#exportExcel').on('click', function() {
+            window.location.href = "{% url 'export_excel' %}";
+        });
+
+        $('.ver-solicitud').click(function () {
+            const solicitudId = $(this).data('solicitud-id');
+            const url = `/solicitud/${solicitudId}/`;  // Cambia la URL según tu configuración
+            window.location.href = url;
+        });
+    });
+</script>

@@ -1,0 +1,48 @@
+{% load static %}
+
+<script src="static/js/jquery-v3.6.4.min.js"></script>
+<link rel="stylesheet" href="static/css/bootstrap.min.css">
+<link rel="stylesheet" href="static/css/bootstrap-icons.css">
+<link rel="stylesheet" href="static/css/styles.css">
+<script src="static/js/bootstrap.bundle.min.js"></script>
+
+{% load crispy_forms_tags  %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Inicia sesión</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Agrega el enlace al archivo de estilos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    <div class="container bg-white p-4 rounded shadow-sm" style="max-width: 400px;">
+        <h3 class="mb-4">Inicia sesión</h3>
+        {% if loginerror  %}
+        <div class="alert alert-danger mt-3" role="alert">
+            <p class="text-center">
+                El usuario o contraseña son incorrectos!
+            </p>
+        </div>
+        {% endif %}
+        <form action="/signin" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+    </div>
+</body>
+</html>
